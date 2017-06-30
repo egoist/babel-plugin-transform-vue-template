@@ -73,7 +73,8 @@ module.exports = function({ types: t }) {
             if (
               !t.isIdentifier(path.node.key, {
                 name: 'render'
-              }) || shouldDisable(path.node.leadingComments)
+              }) ||
+              shouldDisable(path.node.leadingComments)
             ) {
               return
             }
