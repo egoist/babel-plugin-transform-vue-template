@@ -21,7 +21,7 @@ module.exports = function ({ types: t }) {
 
               let { render, errors, tips } = compile(template)
               if (errors.length > 0) {
-                throw new Error(new Error(errors.join('\n')))
+                throw new Error(errors.join('\n'))
               }
               if (tips.length > 0) {
                 tips.forEach(tip => console.log(tip))
