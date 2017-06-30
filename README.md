@@ -43,6 +43,27 @@ export default {
 
 Note that `${foo}` works like `{{ foo }}` here.
 
+You can also write template in the `template` property:
+
+```js
+export default {
+  template: `<div>${new Date()}</div>`
+}
+```
+
+Note that we only transform it into render function when the value is a template literal.
+
+### Disable transforming for specific code
+
+Add a comment block with `transform-disable` to the previous line:
+
+```js
+export default {
+  // transform-disable
+  template: `<div></div>`
+}
+```
+
 ## Contributing
 
 1. Fork it!

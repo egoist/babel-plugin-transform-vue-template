@@ -16,3 +16,7 @@ export default {
     </div>`
   }
 }
+
+const another = {
+  template: `<div>hi</div>`
+}
