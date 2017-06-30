@@ -1,0 +1,46 @@
+{
+  "name": "babel-plugin-transform-vue-template",
+  "version": "0.0.0",
+  "description": "as you can tell from the name.",
+  "repository": {
+    "url": "egoist/babel-plugin-transform-vue-template",
+    "type": "git"
+  },
+  "main": "index.js",
+  "files": [
+    "index.js"
+  ],
+  "engines": {
+    "node": ">=6"
+  },
+  "scripts": {
+    "test": "jest && npm run lint",
+    "lint": "xo"
+  },
+  "author": "egoist <0x142857@gmail.com>",
+  "license": "MIT",
+  "jest": {
+    "testEnvironment": "node"
+  },
+  "dependencies": {
+    "babel-generator": "^6.25.0",
+    "babylon": "^6.17.4",
+    "vue-template-es2015-compiler": "^1.5.3"
+  },
+  "devDependencies": {
+    "babel-plugin-transform-es2015-arrow-functions": "^6.22.0",
+    "eslint-config-rem": "^3.0.0",
+    "jest-cli": "^19.0.0",
+    "vue-template-compiler": "^2.3.4",
+    "xo": "^0.18.0"
+  },
+  "xo": {
+    "extends": "rem",
+    "envs": [
+      "jest"
+    ]
+  },
+  "peerDependencies": {
+    "vue-template-compiler": "^2.3.4"
+  }
+}
