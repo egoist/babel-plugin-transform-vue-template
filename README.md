@@ -41,6 +41,8 @@ export default {
 }
 ```
 
+Note that `${foo}` works like `{{ foo }}` here.
+
 ## Contributing
 
 1. Fork it!
