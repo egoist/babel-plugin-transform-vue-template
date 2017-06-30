@@ -5,7 +5,11 @@ const es2015compile = require('vue-template-es2015-compiler')
 module.exports = function ({ types: t }) {
   return {
     visitor: {
-      Program(path) {
+      ObjectMethod(path) {
+        if (!t.isIdentifier(path.node.key, {
+          name: 'render'
+        })) return
+
         path.traverse({
           ReturnStatement(path) {
             if (t.isTemplateLiteral(path.node.argument)) {
