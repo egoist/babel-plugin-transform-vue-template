@@ -1,5 +1,4 @@
 const babylon = require('babylon')
-const generate = require('babel-generator').default
 const { compile } = require('vue-template-compiler')
 const es2015compile = require('vue-template-es2015-compiler')
 

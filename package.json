@@ -23,7 +23,6 @@
     "testEnvironment": "node"
   },
   "dependencies": {
-    "babel-generator": "^6.25.0",
     "babylon": "^6.17.4",
     "vue-template-es2015-compiler": "^1.5.3"
   },
@@ -38,7 +37,13 @@
     "extends": "rem",
     "envs": [
       "jest"
-    ]
+    ],
+    "ignores": [
+      "example/**"
+    ],
+    "rules": {
+      "new-cap": 0
+    }
   },
   "peerDependencies": {
     "vue-template-compiler": "^2.3.4"
