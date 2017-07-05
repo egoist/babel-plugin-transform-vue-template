@@ -43,9 +43,9 @@ module.exports = function({ types: t }) {
 
   return {
     visitor: {
-      Program(path) {
+      Program(path, file) {
         path.traverse({
-          ObjectProperty(path, file) {
+          ObjectProperty(path) {
             const transformTemplate =
               typeof file.opts.template === 'undefined'
                 ? true
