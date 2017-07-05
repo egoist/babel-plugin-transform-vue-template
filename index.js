@@ -4,7 +4,7 @@ const es2015compile = require('vue-template-es2015-compiler')
 
 function shouldDisable(comments = []) {
   return comments.some(comment => {
-    return /transform-disable/.test(comment.value)
+    return /@transform-disable/.test(comment.value)
   })
 }
 

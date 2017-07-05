@@ -55,11 +55,11 @@ Note that we only transform it into render function when the value is a template
 
 ### Disable transforming for specific code
 
-Add a comment block with `transform-disable` to the previous line:
+Add a comment block with `@transform-disable` to the previous line:
 
 ```js
 export default {
-  // transform-disable
+  // @transform-disable
   template: `<div></div>`
 }
 ```
