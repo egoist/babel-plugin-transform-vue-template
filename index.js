@@ -45,8 +45,14 @@ module.exports = function({ types: t }) {
     visitor: {
       Program(path) {
         path.traverse({
-          ObjectProperty(path) {
+          ObjectProperty(path, file) {
+            const transformTemplate =
+              typeof file.opts.template === 'undefined'
+                ? true
+                : file.opts.template
+
             if (
+              !transformTemplate ||
               !t.isIdentifier(path.node.key, {
                 name: 'template'
               })

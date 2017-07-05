@@ -64,6 +64,17 @@ export default {
 }
 ```
 
+## API
+
+### options
+
+#### template
+
+Type: `boolean`<br>
+Default: `true`
+
+Transform object property `template`.
+
 ## Contributing
 
 1. Fork it!
