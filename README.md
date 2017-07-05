@@ -2,7 +2,11 @@
 
 [![NPM version](https://img.shields.io/npm/v/babel-plugin-transform-vue-template.svg?style=flat)](https://npmjs.com/package/babel-plugin-transform-vue-template) [![NPM downloads](https://img.shields.io/npm/dm/babel-plugin-transform-vue-template.svg?style=flat)](https://npmjs.com/package/babel-plugin-transform-vue-template) [![CircleCI](https://circleci.com/gh/egoist/babel-plugin-transform-vue-template/tree/master.svg?style=shield)](https://circleci.com/gh/egoist/babel-plugin-transform-vue-template/tree/master)  [![donate](https://img.shields.io/badge/$-donate-ff69b4.svg?maxAge=2592000&style=flat)](https://github.com/egoist/donate)
 
-An alternative way to use Vue `template` and compile it at build time.
+An alternative way to use Vue `template` and compile it at build time. So these two are equivalent:
+
+![preview](https://ooo.0o0.ooo/2017/07/05/595cd3e9561b3.png)
+
+We didn't use `<template>` directly because we want to create a higher order component here.
 
 ## Install
 
