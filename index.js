@@ -16,7 +16,7 @@ module.exports = function({ types: t }) {
       return res + next.value.raw + expr
     }, '')
 
-    let { render, errors, tips } = compile(template)
+    let { render, staticRenderFns, errors, tips } = compile(template)
     if (errors.length > 0) {
       throw new Error(errors.join('\n'))
     }
@@ -24,21 +24,29 @@ module.exports = function({ types: t }) {
       tips.forEach(tip => console.log(tip))
     }
 
-    render = es2015compile(
-      `var _result = (function () {${render}}).call(this);`
-    )
+    let ast = babylon.parse(es2015compile(`var renderFns = [
+      (function() { ${render} }).call(this), 
+      [${staticRenderFns.map(fn => `function(){ ${fn} }` ).join(',')}]
+    ];`))
+    // get RHS of  var renderFns = [...];
+    let renderFns = ast.program.body[0].declarations[0].init.elements
 
     const tempVariables = expressions.map((expr, i) => {
-      return t.assignmentExpression(
+      return t.expressionStatement(t.assignmentExpression(
         '=',
         t.MemberExpression(t.ThisExpression(), t.Identifier(`_t$${i}`)),
         expr
-      )
+      ))
     })
 
-    return tempVariables.concat(babylon.parse(render), [
-      t.returnStatement(t.Identifier('_result'))
-    ])
+    return [
+      t.objectMethod('method', t.identifier('render'), [], t.blockStatement(
+        tempVariables.concat(t.returnStatement(renderFns[0]))
+      )),
+      // don't care about tempVariables here because
+      // staticRenderFns will be empty when expressions are available
+      t.objectProperty(t.identifier('staticRenderFns'), renderFns[1]),
+    ]
   }
 
   return {
@@ -86,9 +94,9 @@ module.exports = function({ types: t }) {
             }
 
             path.traverse({
-              ReturnStatement(path) {
-                if (t.isTemplateLiteral(path.node.argument)) {
-                  path.replaceWithMultiple(templateToRender(path.node))
+              ReturnStatement(cpath) {
+                if (t.isTemplateLiteral(cpath.node.argument)) {
+                  path.replaceWithMultiple(templateToRender(cpath.node))
                 }
               }
             })
