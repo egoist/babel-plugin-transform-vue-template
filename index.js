@@ -1,6 +1,8 @@
 const babylon = require('babylon')
 const { compile } = require('vue-template-compiler')
 const es2015compile = require('vue-template-es2015-compiler')
+const pathModule = require('path');
+const fs = require('fs');
 
 function shouldDisable(comments = []) {
   return comments.some(comment => {
@@ -9,13 +11,9 @@ function shouldDisable(comments = []) {
 }
 
 module.exports = function({ types: t }) {
-  function templateToRender(node) {
-    const { quasis, expressions } = node.argument
-    const template = quasis.reduce((res, next, i) => {
-      const expr = expressions[i] ? `{{_t$${i}}}` : ''
-      return res + next.value.raw + expr
-    }, '')
 
+  function templateStringToRender(template, statements) {
+    statements = statements || [];
     let { render, staticRenderFns, errors, tips } = compile(template)
     if (errors.length > 0) {
       throw new Error(errors.join('\n'))
@@ -31,6 +29,23 @@ module.exports = function({ types: t }) {
     // get RHS of  var renderFns = [...];
     let renderFns = ast.program.body[0].declarations[0].init.elements
 
+    return [
+      t.objectMethod('method', t.identifier('render'), [], t.blockStatement(
+        statements.concat(t.returnStatement(renderFns[0]))
+      )),
+      // don't care about tempVariables here because
+      // staticRenderFns will be empty when expressions are available
+      t.objectProperty(t.identifier('staticRenderFns'), renderFns[1]),
+    ]
+  }
+
+  function templateLiteralToRender(node) {
+    const { quasis, expressions } = node
+    const template = quasis.reduce((res, next, i) => {
+      const expr = expressions[i] ? `{{_t$${i}}}` : ''
+      return res + next.value.raw + expr
+    }, '')
+
     const tempVariables = expressions.map((expr, i) => {
       return t.expressionStatement(t.assignmentExpression(
         '=',
@@ -39,14 +54,20 @@ module.exports = function({ types: t }) {
       ))
     })
 
-    return [
-      t.objectMethod('method', t.identifier('render'), [], t.blockStatement(
-        tempVariables.concat(t.returnStatement(renderFns[0]))
-      )),
-      // don't care about tempVariables here because
-      // staticRenderFns will be empty when expressions are available
-      t.objectProperty(t.identifier('staticRenderFns'), renderFns[1]),
-    ]
+    return templateStringToRender(template, tempVariables);
+  }
+
+  function templateRequireToRender(node, state){
+    let dir = pathModule.dirname(pathModule.resolve(state.file.opts.filename))
+    let absolutePath = pathModule.resolve(dir, node.arguments[0].value)
+    let template = fs.readFileSync(absolutePath, "utf8")
+
+    return templateStringToRender(template, [])
+  }
+
+  function isTemplateRequire(value) {
+    return t.isCallExpression(value) && t.isIdentifier(value.callee, { name: 'require' })
+      && t.isStringLiteral(value.arguments[0])
   }
 
   return {
@@ -72,7 +93,7 @@ module.exports = function({ types: t }) {
               return
             }
 
-            if (t.isTemplateLiteral(path.node.value)) {
+            if (t.isTemplateLiteral(path.node.value) || isTemplateRequire(path.node.value)) {
               path.replaceWith(
                 t.ObjectMethod(
                   'method',
@@ -95,8 +116,12 @@ module.exports = function({ types: t }) {
 
             path.traverse({
               ReturnStatement(cpath) {
+                let node = cpath.node;
+                if (isTemplateRequire(cpath.node.argument)) {
+                  return path.replaceWithMultiple(templateRequireToRender(cpath.node.argument, file))
+                }
                 if (t.isTemplateLiteral(cpath.node.argument)) {
-                  path.replaceWithMultiple(templateToRender(cpath.node))
+                  return path.replaceWithMultiple(templateLiteralToRender(cpath.node.argument))
                 }
               }
             })
