@@ -57,6 +57,29 @@ export default {
 
 Note that we only transform it into render function when the value is a template literal.
 
+### Template Require
+
+You can write your template in an external html file and `require` it from js file
+
+```html
+<!-- my-template.html -->
+<div>My Awesome Template</div>
+```
+
+```js
+// my-component.js
+export default {
+  render(){
+    return require('./my-template.html')
+  }
+}
+// OR
+export default {
+  template: require('./my-template.html')
+}
+```
+
+
 ### Disable transforming for specific code
 
 Add a comment block with `@transform-disable` to the previous line:
