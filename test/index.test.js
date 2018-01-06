@@ -2,7 +2,7 @@ const babelPluginTransformVueTemplate = require('../')
 var babel = require('babel-core')
 
 var options = function(){
-	return {compact: true, plugins: babelPluginTransformVueTemplate}
+	return {filename: __filename, compact: true, plugins: babelPluginTransformVueTemplate}
 }
 
 var testTemplate = function(desc, tpl, render, staticRenderFns){
@@ -34,6 +34,15 @@ test('@transform-disable', () => {
 	var code2 = "Vue.component({// @transform-disable\nrender(){return`<div>today is ${new Date()}</div>`;}});"
 	var result2 = babel.transform(code2, options())
 	expect(result2.code).toBe(code2)
+})
+
+test('template require', () => {
+	var code = "require('./test-template.html')";
+	var result = babel.transform("Vue.component({template:" + code + "});", options())
+	expect(result.code).toBe("Vue.component({render(){return function(){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _vm._m(0);}.call(this);},staticRenderFns:[function(){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',[_c('section',[_vm._v(\"Test Template\")])]);}]});")
+
+	var result2 = babel.transform("Vue.component({render(){return " + code + ";}});", options())
+	expect(result2.code).toBe(result.code)
 })
 
 testTemplate('basic', '<div>Hello World</div>', "return function(){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('div',[_vm._v(\"Hello World\")]);}.call(this);")
