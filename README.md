@@ -23,7 +23,7 @@ With `.babelrc`:
 }
 ```
 
-Then every object property `template` whose value is a template string literal will be compiled at build time:
+Then every object property `template` whose value is a template string literal will be compiled to `render` function at build time:
 
 ```js
 import pokemon from 'pokemon'
