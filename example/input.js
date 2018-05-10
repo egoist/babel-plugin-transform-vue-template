@@ -1,22 +1,28 @@
-
-export default {
-  data() {
-    return {
-      time: new Date()
-    }
-  },
-  created() {
-    setInterval(() => {
-      this.time = new Date()
-    }, 1000)
-  },
-  render() {
-    return `<div>
-      ${this.time} hi ${1+`${2}`}
-    </div>`
-  }
+const Component = {
+  template: `<div>
+    <header>
+      <h1>I'm a template!</h1>
+    </header>
+    <p v-if="message">
+      {{ message }}
+    </p>
+    <p v-else>
+      No message.
+    </p>
+  </div>`
 }
 
-const another = {
-  template: `<div>hi</div>`
+
+const Another = {
+  // @transform-disable
+  template: `<div></div>`
+}
+
+const Yet = {
+  template: ``
+}
+
+class Foo {
+  // TODO: add class property support
+  template = '<div></div>'
 }

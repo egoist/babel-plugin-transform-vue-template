@@ -1,6 +1,6 @@
-const babylon = require('babylon')
 const { compile } = require('vue-template-compiler')
-const es2015compile = require('vue-template-es2015-compiler')
+const stripWith = require('vue-template-es2015-compiler')
+const template = require('@babel/template').default
 
 function shouldDisable(comments = []) {
   return comments.some(comment => {
@@ -8,90 +8,55 @@ function shouldDisable(comments = []) {
   })
 }
 
+function toFunction(code, name = '') {
+  return `function ${name}(){${code}}`
+}
+
 module.exports = function({ types: t }) {
-  function templateToRender(node) {
-    const { quasis, expressions } = node.argument
-    const template = quasis.reduce((res, next, i) => {
-      const expr = expressions[i] ? `{{_t$${i}}}` : ''
-      return res + next.value.raw + expr
-    }, '')
-
-    let { render, errors, tips } = compile(template)
-    if (errors.length > 0) {
-      throw new Error(errors.join('\n'))
-    }
-    if (tips.length > 0) {
-      tips.forEach(tip => console.log(tip))
-    }
-
-    render = es2015compile(
-      `var _result = (function () {${render}}).call(this);`
-    )
-
-    const tempVariables = expressions.map((expr, i) => {
-      return t.assignmentExpression(
-        '=',
-        t.MemberExpression(t.ThisExpression(), t.Identifier(`_t$${i}`)),
-        expr
-      )
-    })
-
-    return tempVariables.concat(babylon.parse(render), [
-      t.returnStatement(t.Identifier('_result'))
-    ])
-  }
-
   return {
+    name: 'transform-vue-template',
     visitor: {
-      Program(path, file) {
+      Program(path) {
         path.traverse({
-          ObjectProperty(path) {
-            const transformTemplate =
-              typeof file.opts.template === 'undefined'
-                ? true
-                : file.opts.template
+          TemplateLiteral(path) {
+            const { parent } = path
 
             if (
-              !transformTemplate ||
-              !t.isIdentifier(path.node.key, {
-                name: 'template'
-              })
+              parent.type !== 'ObjectProperty' ||
+              parent.key.name !== 'template' ||
+              shouldDisable(parent.leadingComments)
             ) {
               return
             }
 
-            if (shouldDisable(path.node.leadingComments)) {
-              return
+            const { errors, tips, render, staticRenderFns } = compile(
+              path.evaluate().value
+            )
+            if (errors.length > 0) {
+              errors.forEach(error => console.error(error))
+            }
+            if (tips.length > 0) {
+              tips.forEach(tip => console.log(tip))
             }
 
-            if (t.isTemplateLiteral(path.node.value)) {
-              path.replaceWith(
-                t.ObjectMethod(
-                  'method',
-                  t.Identifier('render'),
-                  [],
-                  t.BlockStatement([t.returnStatement(path.node.value)])
-                )
+            const renderFnValue = template(
+              stripWith(toFunction(render, 'render'))
+            )()
+            renderFnValue.type = 'FunctionExpression'
+
+            const staticRenderFnsValue = template(
+              stripWith(
+                `[${staticRenderFns.map(fn => toFunction(fn)).join(',')}]`
               )
-            }
-          },
-          ObjectMethod(path) {
-            if (
-              !t.isIdentifier(path.node.key, {
-                name: 'render'
-              }) ||
-              shouldDisable(path.node.leadingComments)
-            ) {
-              return
-            }
+            )().expression
 
-            path.traverse({
-              ReturnStatement(path) {
-                if (t.isTemplateLiteral(path.node.argument)) {
-                  path.replaceWithMultiple(templateToRender(path.node))
-                }
-              }
-            })
+            path.parentPath.replaceWithMultiple([
+              t.objectProperty(t.identifier('render'), renderFnValue),
+              t.objectProperty(
+                t.identifier('staticRenderFns'),
+                staticRenderFnsValue
+              )
+            ])
           }
         })
       }
