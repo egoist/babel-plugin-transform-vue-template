@@ -26,8 +26,6 @@ With `.babelrc`:
 Then every object property `template` whose value is a template string literal will be compiled to `render` function at build time:
 
 ```js
-import pokemon from 'pokemon'
-
 export default {
   template: `<div>
     <button @click="whatever">Click me!</button>
@@ -39,6 +37,32 @@ export default {
     }
   }
 }
+```
+
+Compiled code:
+
+```js
+export default {
+  render: function render() {
+    var _vm = this;
+
+    var _h = _vm.$createElement;
+
+    var _c = _vm._self._c || _h;
+
+    return _c('div', [_c('button', {
+      on: {
+        "click": _vm.whatever
+      }
+    }, [_vm._v("Click me!")])]);
+  },
+  staticRenderFns: [],
+  methods: {
+    whatever() {// do whatever
+    }
+
+  }
+};
 ```
 
 ### Disable transforming for specific code
