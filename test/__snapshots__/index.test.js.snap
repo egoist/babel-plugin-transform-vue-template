@@ -1,0 +1,40 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`main 1`] = `
+"const Component = {
+  render: function render() {
+    var _vm = this;
+
+    var _h = _vm.$createElement;
+
+    var _c = _vm._self._c || _h;
+
+    return _c('div', [_vm._m(0), _vm._v(\\" \\"), _vm.message ? _c('p', [_vm._v(\\"\\\\n      \\" + _vm._s(_vm.message) + \\"\\\\n    \\")]) : _c('p', [_vm._v(\\"\\\\n      No message.\\\\n    \\")])]);
+  },
+  staticRenderFns: [function () {
+    var _vm = this;
+
+    var _h = _vm.$createElement;
+
+    var _c = _vm._self._c || _h;
+
+    return _c('header', [_c('h1', [_vm._v(\\"I'm a template!\\")])]);
+  }]
+};
+const Another = {
+  // @transform-disable
+  template: \`<div></div>\`
+};
+const Yet = {
+  render: function render() {
+    var _vm = this;
+
+    var _h = _vm.$createElement;
+
+    var _c = _vm._self._c || _h;
+
+    return _c(\\"div\\");
+  },
+  staticRenderFns: []
+};"
+`;
