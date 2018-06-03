@@ -1,6 +1,6 @@
 const { compile } = require('vue-template-compiler')
 const stripWith = require('vue-template-es2015-compiler')
-const template = require('@babel/template').default
+const babelTemplate = require('@babel/template').default
 
 function shouldDisable(comments = []) {
   return comments.some(comment => {
@@ -10,6 +10,33 @@ function shouldDisable(comments = []) {
 
 function toFunction(code, name = '') {
   return `function ${name}(){${code}}`
+}
+
+function compilePath(t, path, template) {
+  const { errors, tips, render, staticRenderFns } = compile(template)
+
+  if (errors.length > 0) {
+    errors.forEach(error => console.error(error))
+  }
+  if (tips.length > 0) {
+    tips.forEach(tip => console.log(tip))
+  }
+
+  const renderFnValue = babelTemplate(stripWith(toFunction(render, 'render')))()
+  renderFnValue.type = 'FunctionExpression'
+
+  const staticRenderFnsValue = babelTemplate(
+    stripWith(`[${staticRenderFns.map(fn => toFunction(fn)).join(',')}]`)
+  )().expression
+
+  path.parentPath.replaceWithMultiple([
+    t.objectProperty(t.identifier('render'), renderFnValue),
+    t.objectProperty(t.identifier('staticRenderFns'), staticRenderFnsValue)
+  ])
+}
+
+function isTemplateProperty(node) {
+  return node.type === 'ObjectProperty' && node.key.name === 'template'
 }
 
 module.exports = function({ types: t }) {
@@ -22,41 +49,28 @@ module.exports = function({ types: t }) {
             const { parent } = path
 
             if (
-              parent.type !== 'ObjectProperty' ||
-              parent.key.name !== 'template' ||
+              !isTemplateProperty(parent) ||
               shouldDisable(parent.leadingComments)
             ) {
               return
             }
 
-            const { errors, tips, render, staticRenderFns } = compile(
-              path.evaluate().value
-            )
-            if (errors.length > 0) {
-              errors.forEach(error => console.error(error))
+            compilePath(t, path, path.evaluate().value)
+          },
+
+          TaggedTemplateExpression(path) {
+            const { parent, node } = path
+
+            if (
+              node.tag.name !== 'html' ||
+              !isTemplateProperty(parent) ||
+              shouldDisable(parent.leadingComments)
+            ) {
+              return
             }
-            if (tips.length > 0) {
-              tips.forEach(tip => console.log(tip))
-            }
 
-            const renderFnValue = template(
-              stripWith(toFunction(render, 'render'))
-            )()
-            renderFnValue.type = 'FunctionExpression'
-
-            const staticRenderFnsValue = template(
-              stripWith(
-                `[${staticRenderFns.map(fn => toFunction(fn)).join(',')}]`
-              )
-            )().expression
-
-            path.parentPath.replaceWithMultiple([
-              t.objectProperty(t.identifier('render'), renderFnValue),
-              t.objectProperty(
-                t.identifier('staticRenderFns'),
-                staticRenderFnsValue
-              )
-            ])
+            const template = path.get('quasi').evaluate().value
+            compilePath(t, path, template)
           }
         })
       }

@@ -21,3 +21,11 @@ const Another = {
 const Yet = {
   template: ``
 }
+
+const htmlTag = {
+  template: html`
+  <div>
+    {{ hehe }}
+  </div>
+  `
+}
