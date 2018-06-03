@@ -65,6 +65,18 @@ export default {
 };
 ```
 
+### Tagged template expression
+
+This plugin also handles tagged template expression, it simply ignores the tag:
+
+```js
+export default {
+  template: html`<div>{{ message }}</div>`
+}
+```
+
+Note that the tag name can only be `html`.
+
 ### Disable transforming for specific code
 
 Add a comment block with `@transform-disable` to the previous line:
@@ -75,6 +87,13 @@ export default {
   template: `<div></div>`
 }
 ```
+
+### Syntax highlighting
+
+- VSCode, currently no editor support.
+- Atom, supported by default.
+- Sublime, unknown.
+- WebStorm, supported by default.
 
 
 ## Contributing
