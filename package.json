@@ -1,6 +1,6 @@
 {
   "name": "babel-plugin-transform-vue-template",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "as you can tell from the name.",
   "repository": {
     "url": "egoist/babel-plugin-transform-vue-template",
