@@ -1,6 +1,6 @@
 const { compile } = require('vue-template-compiler')
 const stripWith = require('vue-template-es2015-compiler')
-const babelTemplate = require('@babel/template').default
+const { parse } = require('@babel/parser');
 
 function shouldDisable(comments = []) {
   return comments.some(comment => {
@@ -10,6 +10,10 @@ function shouldDisable(comments = []) {
 
 function toFunction(code, name = '') {
   return `function ${name}(){${code}}`
+}
+
+function toASTNode(code) {
+  return parse(code).program.body[0];
 }
 
 function compilePath(t, path, template) {
@@ -22,12 +26,14 @@ function compilePath(t, path, template) {
     tips.forEach(tip => console.log(tip))
   }
 
-  const renderFnValue = babelTemplate(stripWith(toFunction(render, 'render')))()
+  const renderCode = stripWith(toFunction(render, 'render'));
+  const renderFnValue = toASTNode(renderCode);
   renderFnValue.type = 'FunctionExpression'
 
-  const staticRenderFnsValue = babelTemplate(
-    stripWith(`[${staticRenderFns.map(fn => toFunction(fn)).join(',')}]`)
-  )().expression
+  const staticRenderCode = stripWith(`[${staticRenderFns
+      .map(fn => toFunction(fn))
+      .join(',')}]`);
+  const staticRenderFnsValue = toASTNode(staticRenderCode).expression;
 
   path.parentPath.replaceWithMultiple([
     t.objectProperty(t.identifier('render'), renderFnValue),
