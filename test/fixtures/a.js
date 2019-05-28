@@ -22,6 +22,10 @@ const Yet = {
   template: ``
 }
 
+const Issue_11 = {
+  template: `<ABC/>`
+}
+
 const htmlTag = {
   template: html`
   <div>
