@@ -22,12 +22,14 @@ function compilePath(t, path, template) {
     tips.forEach(tip => console.log(tip))
   }
 
-  const renderFnValue = babelTemplate(stripWith(toFunction(render, 'render')))()
+  const renderFnValue = babelTemplate.ast(
+    stripWith(toFunction(render, 'render'))
+  )
   renderFnValue.type = 'FunctionExpression'
 
-  const staticRenderFnsValue = babelTemplate(
+  const staticRenderFnsValue = babelTemplate.ast(
     stripWith(`[${staticRenderFns.map(fn => toFunction(fn)).join(',')}]`)
-  )().expression
+  ).expression
 
   path.parentPath.replaceWithMultiple([
     t.objectProperty(t.identifier('render'), renderFnValue),
